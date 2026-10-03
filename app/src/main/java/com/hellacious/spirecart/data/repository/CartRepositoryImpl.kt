@@ -48,7 +48,7 @@ class CartRepositoryImpl(
             .flowOn(ioDispatcher)
     }
 
-    override suspend fun addToCart(product: Product, quantity: Int) = withContext(ioDispatcher) {
+    override suspend fun addToCart(product: Product, quantity: Int): Unit = withContext(ioDispatcher) {
         val existing = cartDao.getCartItemById(product.id)
         if (existing != null) {
             val maxStock = if (product.stock > 0) product.stock else existing.stock
@@ -58,25 +58,28 @@ class CartRepositoryImpl(
             val initialQty = quantity.coerceAtLeast(1).coerceAtMost(maxOf(1, product.stock))
             cartDao.insertOrUpdate(product.toCartItemEntity(initialQty))
         }
+        Unit
     }
 
-    override suspend fun increaseQuantity(productId: Long) = withContext(ioDispatcher) {
+    override suspend fun increaseQuantity(productId: Long): Unit = withContext(ioDispatcher) {
         val existing = cartDao.getCartItemById(productId) ?: return@withContext
         if (existing.quantity < existing.stock) {
             cartDao.updateQuantity(productId, existing.quantity + 1)
         }
+        Unit
     }
 
-    override suspend fun decreaseQuantity(productId: Long) = withContext(ioDispatcher) {
+    override suspend fun decreaseQuantity(productId: Long): Unit = withContext(ioDispatcher) {
         val existing = cartDao.getCartItemById(productId) ?: return@withContext
         if (existing.quantity > 1) {
             cartDao.updateQuantity(productId, existing.quantity - 1)
         } else {
             cartDao.deleteByProductId(productId)
         }
+        Unit
     }
 
-    override suspend fun updateQuantity(productId: Long, quantity: Int) = withContext(ioDispatcher) {
+    override suspend fun updateQuantity(productId: Long, quantity: Int): Unit = withContext(ioDispatcher) {
         if (quantity <= 0) {
             cartDao.deleteByProductId(productId)
         } else {
@@ -84,13 +87,16 @@ class CartRepositoryImpl(
             val cappedQty = quantity.coerceAtMost(maxOf(1, existing.stock))
             cartDao.updateQuantity(productId, cappedQty)
         }
+        Unit
     }
 
-    override suspend fun removeFromCart(productId: Long) = withContext(ioDispatcher) {
+    override suspend fun removeFromCart(productId: Long): Unit = withContext(ioDispatcher) {
         cartDao.deleteByProductId(productId)
+        Unit
     }
 
-    override suspend fun clearCart() = withContext(ioDispatcher) {
+    override suspend fun clearCart(): Unit = withContext(ioDispatcher) {
         cartDao.clearCart()
+        Unit
     }
 }
