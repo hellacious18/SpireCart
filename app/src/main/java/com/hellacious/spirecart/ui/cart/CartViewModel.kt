@@ -62,11 +62,11 @@ class CartViewModel(
     fun checkout() {
         viewModelScope.launch {
             cartRepository.clearCart()
-            _uiState.update { it.copy(checkoutSuccessMessage = "Order placed successfully! Thank you for shopping with SpireCart.") }
+            _uiState.update { it.copy(isCheckoutSuccess = true) }
         }
     }
 
     fun dismissCheckoutMessage() {
-        _uiState.update { it.copy(checkoutSuccessMessage = null) }
+        _uiState.update { it.copy(isCheckoutSuccess = false) }
     }
 }

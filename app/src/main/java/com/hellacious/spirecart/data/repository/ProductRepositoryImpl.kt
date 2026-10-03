@@ -1,11 +1,21 @@
 package com.hellacious.spirecart.data.repository
 
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
+import androidx.paging.map
 import com.hellacious.spirecart.core.network.NetworkResult
 import com.hellacious.spirecart.core.network.safeApiCall
 import com.hellacious.spirecart.data.local.dao.ProductDao
+import com.hellacious.spirecart.data.local.database.SpireCartDatabase
+import com.hellacious.spirecart.data.local.entity.ProductEntity
 import com.hellacious.spirecart.data.local.storage.LocalImageStorage
 import com.hellacious.spirecart.data.mapper.toDomain
 import com.hellacious.spirecart.data.mapper.toEntity
+import com.hellacious.spirecart.data.paging.ProductRemoteMediator
 import com.hellacious.spirecart.data.remote.api.ApiClient
 import com.hellacious.spirecart.data.remote.api.DummyJsonApiService
 import com.hellacious.spirecart.domain.model.Product
@@ -15,21 +25,26 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class ProductRepositoryImpl(
     private val apiService: DummyJsonApiService = ApiClient.apiService,
     private val productDao: ProductDao? = null,
+    private val database: SpireCartDatabase? = null,
     private val localImageStorage: LocalImageStorage? = null,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ProductRepository {
 
+    private val activeProductDao: ProductDao? = productDao ?: database?.productDao()
+
     private suspend fun cacheProductsWithImages(products: List<Product>) {
-        if (productDao == null) return
+        if (activeProductDao == null) return
 
         // 1. Immediately cache metadata to Room
         val initialEntities = products.map { it.toEntity() }
-        productDao.insertProducts(initialEntities)
+        activeProductDao.insertProducts(initialEntities)
 
         // 2. Pre-download images locally and update Room entities with local storage file paths
         if (localImageStorage != null) {
@@ -50,8 +65,47 @@ class ProductRepositoryImpl(
                         )
                     }
                 }.awaitAll()
-                productDao.insertProducts(updatedEntities)
+                activeProductDao.insertProducts(updatedEntities)
             }
+        }
+    }
+
+    @OptIn(ExperimentalPagingApi::class)
+    override fun getProductsPaged(
+        category: String?,
+        query: String?
+    ): Flow<PagingData<Product>> {
+        val pagingSourceFactory = {
+            when {
+                !query.isNullOrBlank() -> activeProductDao?.searchProductsPagingSource(query)
+                    ?: EmptyProductPagingSource()
+                !category.isNullOrBlank() -> activeProductDao?.getProductsByCategoryPagingSource(category)
+                    ?: EmptyProductPagingSource()
+                else -> activeProductDao?.getProductsPagingSource()
+                    ?: EmptyProductPagingSource()
+            }
+        }
+
+        val mediator = database?.let {
+            ProductRemoteMediator(
+                apiService = apiService,
+                database = it,
+                localImageStorage = localImageStorage,
+                category = category,
+                query = query
+            )
+        }
+
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                prefetchDistance = 5,
+                enablePlaceholders = false
+            ),
+            remoteMediator = mediator,
+            pagingSourceFactory = pagingSourceFactory
+        ).flow.map { pagingData ->
+            pagingData.map { it.toDomain() }
         }
     }
 
@@ -64,7 +118,7 @@ class ProductRepositoryImpl(
                     NetworkResult.Success(domainProducts)
                 }
                 is NetworkResult.Error -> {
-                    val cached = productDao?.getAllProducts()?.map { it.toDomain() }
+                    val cached = activeProductDao?.getAllProducts()?.map { it.toDomain() }
                     if (!cached.isNullOrEmpty()) {
                         NetworkResult.Success(cached)
                     } else {
@@ -84,7 +138,7 @@ class ProductRepositoryImpl(
                     NetworkResult.Success(domainProducts)
                 }
                 is NetworkResult.Error -> {
-                    val cachedResults = productDao?.searchProducts(query)?.map { it.toDomain() }
+                    val cachedResults = activeProductDao?.searchProducts(query)?.map { it.toDomain() }
                     if (cachedResults != null) {
                         NetworkResult.Success(cachedResults)
                     } else {
@@ -104,7 +158,7 @@ class ProductRepositoryImpl(
                     NetworkResult.Success(domainProduct)
                 }
                 is NetworkResult.Error -> {
-                    val cached = productDao?.getProductById(id)?.toDomain()
+                    val cached = activeProductDao?.getProductById(id)?.toDomain()
                     if (cached != null) {
                         NetworkResult.Success(cached)
                     } else {
@@ -122,7 +176,7 @@ class ProductRepositoryImpl(
                     NetworkResult.Success(result.data.map { it.toDomain() })
                 }
                 is NetworkResult.Error -> {
-                    val cachedCategories = productDao?.getDistinctCategories()?.map { slug ->
+                    val cachedCategories = activeProductDao?.getDistinctCategories()?.map { slug ->
                         ProductCategory(
                             slug = slug,
                             name = slug.replace("-", " ").replaceFirstChar { it.uppercase() }
@@ -151,7 +205,7 @@ class ProductRepositoryImpl(
                     NetworkResult.Success(domainProducts)
                 }
                 is NetworkResult.Error -> {
-                    val cached = productDao?.getProductsByCategory(category)?.map { it.toDomain() }
+                    val cached = activeProductDao?.getProductsByCategory(category)?.map { it.toDomain() }
                     if (!cached.isNullOrEmpty()) {
                         NetworkResult.Success(cached)
                     } else {
@@ -161,4 +215,15 @@ class ProductRepositoryImpl(
                 is NetworkResult.Loading -> NetworkResult.Loading
             }
         }
+}
+
+private class EmptyProductPagingSource : PagingSource<Int, ProductEntity>() {
+    override fun getRefreshKey(state: PagingState<Int, ProductEntity>): Int? = null
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ProductEntity> {
+        return LoadResult.Page(
+            data = emptyList(),
+            prevKey = null,
+            nextKey = null
+        )
+    }
 }

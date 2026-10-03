@@ -58,6 +58,7 @@ class ProductDetailsViewModelTest {
         override suspend fun getProductDetails(id: Long): NetworkResult<Product> = productResult
         override suspend fun getCategories(): NetworkResult<List<ProductCategory>> = NetworkResult.Success(emptyList())
         override suspend fun getProductsByCategory(category: String, limit: Int, skip: Int): NetworkResult<List<Product>> = NetworkResult.Success(emptyList())
+        override fun getProductsPaged(category: String?, query: String?): Flow<androidx.paging.PagingData<Product>> = kotlinx.coroutines.flow.flowOf(androidx.paging.PagingData.empty())
     }
 
     private class FakeCartRepository : CartRepository {

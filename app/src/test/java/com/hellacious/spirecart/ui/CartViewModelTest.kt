@@ -130,7 +130,6 @@ class CartViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue(state.isEmpty)
-        assertNotNull(state.checkoutSuccessMessage)
-        assertTrue(state.checkoutSuccessMessage!!.contains("Order placed successfully"))
+        assertTrue(state.isCheckoutSuccess)
     }
 }

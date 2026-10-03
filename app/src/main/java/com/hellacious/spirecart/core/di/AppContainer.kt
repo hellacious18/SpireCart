@@ -1,6 +1,8 @@
 package com.hellacious.spirecart.core.di
 
 import android.content.Context
+import com.hellacious.spirecart.core.network.ConnectivityObserver
+import com.hellacious.spirecart.core.network.NetworkConnectivityObserver
 import com.hellacious.spirecart.data.local.database.SpireCartDatabase
 import com.hellacious.spirecart.data.local.storage.LocalImageStorage
 import com.hellacious.spirecart.data.local.storage.LocalImageStorageImpl
@@ -16,6 +18,7 @@ interface AppContainer {
     val productRepository: ProductRepository
     val cartRepository: CartRepository
     val localImageStorage: LocalImageStorage
+    val connectivityObserver: ConnectivityObserver
 }
 
 class DefaultAppContainer(private val context: Context) : AppContainer {
@@ -28,6 +31,10 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         SpireCartDatabase.getInstance(context)
     }
 
+    override val connectivityObserver: ConnectivityObserver by lazy {
+        NetworkConnectivityObserver(context)
+    }
+
     override val localImageStorage: LocalImageStorage by lazy {
         LocalImageStorageImpl(context)
     }
@@ -36,6 +43,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         ProductRepositoryImpl(
             apiService = apiService,
             productDao = database.productDao(),
+            database = database,
             localImageStorage = localImageStorage
         )
     }

@@ -1,140 +1,123 @@
-# SpireCart - Product Catalog & Offline Shopping Cart
+# SpireCart - Product Catalog & Offline Cart
 
-SpireCart is a modern Android application built with **Jetpack Compose**, **Kotlin Coroutines**, **Retrofit**, and **Room Database**. It fetches live product catalog data from the **DummyJSON Products API**, enables real-time search and category filtering, presents rich product details, and provides a **100% offline-resilient shopping cart** with local persistence.
-
----
-
-## 📱 Features
-
-- **Product Catalog Listing**:
-  - Live product list fetched from DummyJSON API.
-  - Displays high-resolution product thumbnails, titles, brand, category, rating stars, price, and discount percentage tags.
-  - Seamless loading spinner, empty state views, and error states with retry mechanisms.
-
-- **Real-Time Product Search & Category Filtering**:
-  - Instant search with a 350ms debounce to prevent API thrashing and optimize network performance.
-  - Horizontal scrollable category chips for quick filtering across all DummyJSON product categories.
-  - Handles empty search results and invalid queries gracefully with reset actions.
-
-- **Comprehensive Product Details**:
-  - High-resolution hero image with thumbnail gallery switcher.
-  - Stock availability status (`In Stock`, `Out of Stock`, `Low Stock`).
-  - Full descriptions, SKU, brand, warranty information, shipping estimates, and return policies.
-  - Customer review breakdown with reviewer names, star ratings, and comments.
-  - Sticky bottom action bar with quantity stepper and dynamic price total.
-
-- **Offline-Ready Shopping Cart**:
-  - Local database persistence powered by **AndroidX Room**.
-  - Add products directly from catalog cards or product details screen.
-  - Quantity steppers (`+` and `-`) with stock limit validation.
-  - Automatically removes items when quantity drops to 0.
-  - Real-time cart badge counter across screens.
-  - Complete order summary card with item breakdown, shipping status, and total calculation.
-  - **Full Offline Availability**: Cart data, item manipulation, and totals remain 100% available and responsive even in airplane mode or with no internet connectivity.
+SpireCart is a shopping Android app built with Jetpack Compose. It lets users browse and search products from DummyJSON and manage a shopping cart that works completely offline.
 
 ---
 
-## 🏗️ Architecture
+## ✨ Features
 
-SpireCart is built following **Clean Architecture** and **MVVM (Model-View-ViewModel)** design principles:
+- **Product Catalog**: Browse products with images, prices, ratings, and discounts.
+- **Search & Categories**: Search products in real-time or filter by category chips.
+- **Product Details**: View product descriptions, multiple images, stock status, ratings, reviews, and policies.
+- **Offline Shopping Cart**:
+  - Add items from product lists or the details screen.
+  - Increase/decrease quantities or remove items.
+  - View total item count and live order price.
+  - **Works 100% offline**: All cart actions work without internet and persist when closing/reopening the app.
+- **Auto-Sync & Offline Status**: Notifies when the app is offline and automatically refreshes when back online.
+
+---
+
+## 🏛️ Architecture & Project Structure
+
+SpireCart is built following **Modern Android Architecture (MVVM / Clean Architecture)** with **Unidirectional Data Flow (UDF)** and **Offline-First** principles:
 
 ```
-[ UI Layer (Jetpack Compose) ]
-             ▲
-             │ (StateFlow / Events)
-[ Presentation Layer (ViewModels) ]
-             ▲
-             │ (Coroutines Flow)
-[ Domain Layer (Models, Repositories, Business Logic) ]
-      ▲                              ▲
-      │                              │
-[ Remote Data Source (Retrofit) ]    [ Local Data Source (Room Database) ]
+┌────────────────────────────────────────────────────────┐
+│               UI Layer (Jetpack Compose)               │
+│      ProductListScreen │ ProductDetailsScreen │ Cart   │
+└───────────────────────────▲────────────────────────────┘
+                            │ (StateFlow / Events)
+┌───────────────────────────┴────────────────────────────┐
+│                  Presentation Layer                    │
+│      ProductListViewModel │ DetailsVM │ CartViewModel  │
+└───────────────────────────▲────────────────────────────┘
+                            │ (Coroutines Flow)
+┌───────────────────────────┴────────────────────────────┐
+│                     Domain Layer                       │
+│    Models (Product, CartItem) │ Repository Interfaces  │
+└───────────────────────────▲────────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+┌───────────────────────────┐ ┌───────────────────────────┐
+│     Remote Data Source    │ │     Local Data Source     │
+│  Retrofit + DummyJSON API │ │ Room DB + RemoteMediator  │
+└───────────────────────────┘ └───────────────────────────┘
 ```
 
-### Layer Breakdown:
-1. **Remote API Layer**:
-   - `DummyJsonApiService` Retrofit interface defining REST endpoints.
-   - `ApiClient` OkHttpClient configuration with timeouts and logging.
-   - DTOs (`ProductDto`, `ProductsResponseDto`, `CategoryDto`) mapped to Domain models via extension mappers.
-   - `safeApiCall` utility catching HTTP errors, timeouts, and network reachability issues.
-2. **Local Persistence Layer**:
-   - `CartItemEntity` Room entity with indexed primary keys and timestamps.
-   - `CartDao` providing reactive SQLite `Flow` streams for real-time UI synchronization.
-   - `SpireCartDatabase` singleton database instance.
-3. **Repository Layer**:
-   - `ProductRepository`: Manages catalog fetching, queries, and category lookups.
-   - `CartRepository`: Encapsulates offline cart operations, quantity bounds, stock capping, and auto-removal.
-4. **Presentation & UI Layer**:
-   - Built 100% in **Jetpack Compose** with Material 3.
-   - Unidirectional Data Flow (UDF) with `StateFlow` and immutable UI states.
+### 📂 Package Structure
+```text
+com.hellacious.spirecart/
+├── core/
+│   ├── di/                 # Manual Dependency Injection (AppContainer)
+│   └── network/            # NetworkResult wrapper & ConnectivityObserver
+├── data/
+│   ├── local/              # Room Database, DAOs & Entities (Cart, Products, RemoteKeys)
+│   ├── remote/             # Retrofit ApiClient, ApiService & DTOs
+│   ├── paging/             # Paging 3 ProductRemoteMediator
+│   └── repository/         # Repository Implementations (ProductRepositoryImpl, CartRepositoryImpl)
+├── domain/
+│   ├── model/              # Pure Domain Models (Product, CartItem, CartSummary)
+│   └── repository/         # Repository Interfaces
+└── ui/
+    ├── cart/               # CartScreen, CartViewModel, CartUiState
+    ├── details/            # ProductDetailsScreen, ProductDetailsViewModel, ProductDetailsUiState
+    ├── products/           # ProductListScreen, ProductListViewModel, ProductListUiState
+    ├── components/         # Reusable Compose widgets (ProductCard, CartItemCard, CategoryChips, ErrorView)
+    ├── navigation/         # Navigation Graph & Destinations (SpireCartNavGraph, Screen)
+    └── theme/              # Material 3 Color Schemes, Typography & Shapes
+```
 
 ---
 
-## 📦 Libraries & Tech Stack
+## 📦 Libraries Used
 
-| Component | Library | Version | Purpose |
-|---|---|---|---|
-| **Language** | Kotlin | 2.2.10 | Core programming language |
-| **UI Toolkit** | Jetpack Compose (BOM) | 2026.02.01 | Declarative native UI |
-| **Architecture** | AndroidX Lifecycle & ViewModel Compose | 2.11.0 | MVVM state management & lifecycle handling |
-| **Navigation** | Navigation Compose | 2.8.8 | Single-activity Compose navigation graph |
-| **Networking** | Retrofit 2 & OkHttp 3 | 2.11.0 / 4.12.0 | REST API client & HTTP logging interceptor |
-| **Serialization** | Google Gson | 2.11.0 | JSON parsing and serialization |
-| **Local Persistence** | AndroidX Room | 2.6.1 | SQLite ORM database for offline cart persistence |
-| **Image Loading** | Coil Compose | 2.7.0 | Asynchronous image loading with memory caching |
-| **Asynchrony** | Kotlinx Coroutines | 1.10.1 | Reactive streams and background threads |
-| **Unit Testing** | JUnit 4 & Coroutines Test | 4.13.2 / 1.10.1 | Unit test verification of logic and ViewModels |
+- **Kotlin & Coroutines**: Reactive asynchronous programming with `Flow` & `StateFlow`.
+- **Jetpack Compose (Material 3)**: Modern declarative, adaptive UI design.
+- **Room Database**: Local SQLite storage for cart persistence, product caching, and paging remote keys.
+- **Paging 3 + RemoteMediator**: Smooth, reactive infinite scrolling with offline database cache.
+- **Retrofit & OkHttp**: Networking client with JSON parsing and logging interceptors.
+- **Coil**: Asynchronous image loading with disk caching for offline display.
+- **Navigation Compose**: Type-safe single-activity screen navigation.
 
 ---
 
-## 💾 Local Storage Approach
+## 💾 Local Storage (Offline Cart & Data)
 
-The shopping cart persistence is implemented using **AndroidX Room**:
-- **Entity**: `CartItemEntity` stores `productId` (PrimaryKey), `title`, `price`, `thumbnail`, `quantity`, `stock`, `category`, and `addedAt` timestamp.
-- **Reactive Streams**: The DAO exposes `Flow<List<CartItemEntity>>` and `Flow<Int>` which automatically emit new values whenever the underlying SQLite database changes.
-- **Stock Guarding**: Cart additions and increments check `stock` limits to ensure users cannot add more items than available in stock.
-- **Zero-Quantity Cleanup**: Decrementing an item when quantity is 1 immediately deletes the row from the database.
+1. **Cart Persistence**:
+   - Cart items are saved into Room database (`cart_items` table).
+   - Adding, modifying quantities, or removing items updates the database directly.
+   - The cart remains saved even after quitting or restarting the app.
+
+2. **Offline Products & Images**:
+   - Product information is cached in Room database when fetched.
+   - Images are saved locally so they continue to show when the device is in airplane mode.
 
 ---
 
 ## 💡 Important Design Decisions
 
-1. **Inside-Out Architecture**: Built from Data Layer $\rightarrow$ Room DB $\rightarrow$ ViewModels $\rightarrow$ Compose UI. This prevented mismatches between API schemas and UI assumptions.
-2. **DTO & Domain Model Separation**: Domain entities are decoupled from backend JSON schemas, shielding ViewModels and Compose screens from API changes.
-3. **Coroutines Search Debounce**: Product search uses a 350ms debounce with Job cancellation to avoid unnecessary HTTP requests during rapid typing.
-4. **Reactive Single Source of Truth**: The cart badge count in the top bar and the cart screen observe the exact same Room database `Flow`, guaranteeing instant synchronization across all screens.
+1. **Offline First Cart**: Cart operations do not rely on network calls, guaranteeing zero delay and full offline support.
+2. **Search Debouncing**: A short delay (350ms) is applied while typing to prevent unnecessary API calls.
+3. **Automatic Reconnection**: The app detects when the internet comes back online and automatically refreshes data.
+4. **Stock Limit Protection**: Prevents users from adding more items to the cart than currently available in stock.
 
 ---
 
-## 🛠️ Setup & Build Instructions
+## 🛠️ How to Build and Run
 
-### Prerequisites:
-- **Android Studio Ladybug / Koala / Meerkat** (or newer).
-- **JDK 17** (or compatible JDK 17+ toolchain).
-- **Android SDK Platform 35 / 37**.
-
-### Build & Run:
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd SpireCart
-   ```
-2. Build the Debug APK:
-   ```bash
-   ./gradlew assembleDebug
-   ```
-3. Run all Unit Tests:
+1. Open the project in **Android Studio**.
+2. Make sure you have **JDK 17** selected in Settings $\rightarrow$ Build Tools $\rightarrow$ Gradle.
+3. Sync Gradle and run on an Android device or emulator (Android 11+ / API 30+).
+4. Run tests:
    ```bash
    ./gradlew test
-   ```
-4. Install on a connected device / emulator:
-   ```bash
-   ./gradlew installDebug
    ```
 
 ---
 
 ## ⚠️ Known Limitations
 
-- The DummyJSON Products API is a mock backend; changes made to the remote catalog (like mock checkouts) are simulated locally.
-- Product catalog browsing requires an active internet connection on initial load; however, once items are added to the cart, the shopping cart is 100% accessible and editable offline.
+- The DummyJSON API is a mock service, so remote checkout is not processed on a real payment gateway.
+- Product images need to be loaded at least once with internet before they become available offline.

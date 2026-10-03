@@ -12,7 +12,8 @@ data class ProductListUiState(
     val errorMessage: String? = null,
     val isSearching: Boolean = false,
     val cartItemCount: Int = 0,
-    val userMessage: String? = null
+    val userMessageResId: Int? = null,
+    val isOnline: Boolean = true
 ) {
     val isEmpty: Boolean
         get() = !isLoading && errorMessage == null && products.isEmpty()

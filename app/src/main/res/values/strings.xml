@@ -1,3 +1,64 @@
 <resources>
     <string name="app_name">SpireCart</string>
+    <string name="app_tagline">Explore top products &amp; deals</string>
+
+    <!-- Product Catalog & Search -->
+    <string name="search_placeholder">Search products, brands, tech...</string>
+    <string name="search_content_desc">Search</string>
+    <string name="clear_search">Clear search</string>
+    <string name="all_categories">All</string>
+    <string name="all_products">All Products</string>
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="back_online_syncing">Back online! Syncing latest catalog…</string>
+    <string name="no_products_found">No products found</string>
+    <string name="no_products_category">No products available in this category.</string>
+    <string name="no_products_query">No matches found for \"%1$s\". Try adjusting your search query.</string>
+    <string name="reset_filters">Reset Filters</string>
+    <string name="failed_load_products">Failed to load products. Check your internet connection.</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="retry">Retry</string>
+    <string name="try_again">Try Again</string>
+
+    <!-- Product Details -->
+    <string name="product_details">Product Details</string>
+    <string name="in_stock">In Stock</string>
+    <string name="out_of_stock">Out of Stock</string>
+    <string name="in_stock_count">%1$d in stock</string>
+    <string name="reviews_count">(%1$d reviews)</string>
+    <string name="description">Description</string>
+    <string name="customer_reviews">Customer Reviews</string>
+    <string name="failed_load_details">Failed to load product details.</string>
+    <string name="added_to_cart_simple">Added to shopping cart!</string>
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="add_with_price">Add • $%1$.2f</string>
+    <string name="percent_off">%1$d%% OFF</string>
+    <string name="formatted_price">$%1$.2f</string>
+    <string name="price_per_unit">$%1$.2f / unit</string>
+
+    <!-- Shopping Cart -->
+    <string name="shopping_cart">Shopping Cart</string>
+    <string name="cart_items_count">%1$d items in cart</string>
+    <string name="clear_cart_dialog_title">Clear Shopping Cart?</string>
+    <string name="clear_cart_dialog_message">Are you sure you want to remove all items from your shopping cart?</string>
+    <string name="clear">Clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="order_placed_title">Order Placed!</string>
+    <string name="order_placed_success">Order placed successfully! Thank you for shopping with SpireCart.</string>
+    <string name="continue_shopping">Continue Shopping</string>
+    <string name="total_items">Total Items</string>
+    <string name="shipping">Shipping</string>
+    <string name="free">FREE</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="proceed_to_checkout">Proceed to Checkout</string>
+    <string name="your_cart_is_empty">Your cart is empty</string>
+    <string name="cart_empty_message">Explore our wide collection of products and add items to your cart.</string>
+    <string name="start_shopping">Start Shopping</string>
+    <string name="remove_item">Remove Item</string>
+    <string name="added_to_cart">Added %1$s to cart</string>
+
+    <!-- Navigation & Common Content Descriptions -->
+    <string name="back">Back</string>
+    <string name="increase">Increase</string>
+    <string name="decrease">Decrease</string>
+    <string name="cart">Cart</string>
 </resources>

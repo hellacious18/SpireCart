@@ -6,18 +6,21 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.hellacious.spirecart.data.local.dao.CartDao
 import com.hellacious.spirecart.data.local.dao.ProductDao
+import com.hellacious.spirecart.data.local.dao.ProductRemoteKeyDao
 import com.hellacious.spirecart.data.local.entity.CartItemEntity
 import com.hellacious.spirecart.data.local.entity.ProductEntity
+import com.hellacious.spirecart.data.local.entity.ProductRemoteKeyEntity
 
 @Database(
-    entities = [CartItemEntity::class, ProductEntity::class],
-    version = 3,
+    entities = [CartItemEntity::class, ProductEntity::class, ProductRemoteKeyEntity::class],
+    version = 4,
     exportSchema = false
 )
 abstract class SpireCartDatabase : RoomDatabase() {
 
     abstract fun cartDao(): CartDao
     abstract fun productDao(): ProductDao
+    abstract fun productRemoteKeyDao(): ProductRemoteKeyDao
 
     companion object {
         @Volatile

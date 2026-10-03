@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,9 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.hellacious.spirecart.R
 import com.hellacious.spirecart.domain.model.Product
 import com.hellacious.spirecart.ui.theme.DiscountRed
 import com.hellacious.spirecart.ui.theme.DiscountRedBg
@@ -86,7 +86,7 @@ fun ProductCard(
                         modifier = Modifier.align(Alignment.TopStart)
                     ) {
                         Text(
-                            text = "-${product.discountPercentage.toInt()}%",
+                            text = stringResource(R.string.percent_off, product.discountPercentage.toInt()),
                             color = DiscountRed,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
@@ -143,7 +143,7 @@ fun ProductCard(
                 ) {
                     Column {
                         Text(
-                            text = "$${String.format("%.2f", product.price)}",
+                            text = stringResource(R.string.formatted_price, product.price),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -152,7 +152,7 @@ fun ProductCard(
                         if (product.discountPercentage > 0) {
                             val originalPrice = product.price / (1 - (product.discountPercentage / 100))
                             Text(
-                                text = "$${String.format("%.2f", originalPrice)}",
+                                text = stringResource(R.string.formatted_price, originalPrice),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontSize = 11.sp,
                                     textDecoration = TextDecoration.LineThrough
@@ -173,7 +173,7 @@ fun ProductCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.AddShoppingCart,
-                                contentDescription = "Add to Cart",
+                                contentDescription = stringResource(R.string.add_to_cart),
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )

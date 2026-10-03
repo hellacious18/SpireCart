@@ -19,6 +19,13 @@ class ProductRepositoryTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
+    private fun <T : Any> fakePagingSource(items: List<T>): androidx.paging.PagingSource<Int, T> =
+        object : androidx.paging.PagingSource<Int, T>() {
+            override fun getRefreshKey(state: androidx.paging.PagingState<Int, T>): Int? = null
+            override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> =
+                LoadResult.Page(data = items, prevKey = null, nextKey = null)
+        }
+
     private val fakeProductDto = ProductDto(
         id = 10,
         title = "Test Phone",
@@ -151,9 +158,12 @@ class ProductRepositoryTest {
             )
 
             override suspend fun getAllProducts(): List<com.hellacious.spirecart.data.local.entity.ProductEntity> = list
+            override fun getProductsPagingSource(): androidx.paging.PagingSource<Int, com.hellacious.spirecart.data.local.entity.ProductEntity> = fakePagingSource(list)
+            override fun getProductsByCategoryPagingSource(category: String): androidx.paging.PagingSource<Int, com.hellacious.spirecart.data.local.entity.ProductEntity> = fakePagingSource(list.filter { it.category == category })
             override suspend fun getProductById(productId: Long) = list.find { it.id == productId }
             override suspend fun getProductsByCategory(category: String) = list.filter { it.category == category }
             override suspend fun searchProducts(query: String) = list.filter { it.title.contains(query, ignoreCase = true) }
+            override fun searchProductsPagingSource(query: String): androidx.paging.PagingSource<Int, com.hellacious.spirecart.data.local.entity.ProductEntity> = fakePagingSource(list.filter { it.title.contains(query, ignoreCase = true) })
             override suspend fun getDistinctCategories() = list.map { it.category }.distinct()
             override suspend fun insertProducts(products: List<com.hellacious.spirecart.data.local.entity.ProductEntity>) { list.addAll(products) }
             override suspend fun clearAll() { list.clear() }
@@ -173,9 +183,12 @@ class ProductRepositoryTest {
         val insertedList = mutableListOf<com.hellacious.spirecart.data.local.entity.ProductEntity>()
         val fakeDao = object : com.hellacious.spirecart.data.local.dao.ProductDao {
             override suspend fun getAllProducts() = insertedList
+            override fun getProductsPagingSource(): androidx.paging.PagingSource<Int, com.hellacious.spirecart.data.local.entity.ProductEntity> = fakePagingSource(insertedList)
+            override fun getProductsByCategoryPagingSource(category: String): androidx.paging.PagingSource<Int, com.hellacious.spirecart.data.local.entity.ProductEntity> = fakePagingSource(insertedList.filter { it.category == category })
             override suspend fun getProductById(productId: Long) = insertedList.find { it.id == productId }
             override suspend fun getProductsByCategory(category: String) = insertedList.filter { it.category == category }
             override suspend fun searchProducts(query: String) = insertedList.filter { it.title.contains(query, ignoreCase = true) }
+            override fun searchProductsPagingSource(query: String): androidx.paging.PagingSource<Int, com.hellacious.spirecart.data.local.entity.ProductEntity> = fakePagingSource(insertedList.filter { it.title.contains(query, ignoreCase = true) })
             override suspend fun getDistinctCategories() = insertedList.map { it.category }.distinct()
             override suspend fun insertProducts(products: List<com.hellacious.spirecart.data.local.entity.ProductEntity>) {
                 insertedList.clear()

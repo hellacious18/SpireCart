@@ -25,8 +25,6 @@ import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -47,9 +45,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.hellacious.spirecart.R
 import com.hellacious.spirecart.ui.components.CartItemCard
 import com.hellacious.spirecart.ui.components.EmptyStateView
 import com.hellacious.spirecart.ui.theme.SuccessGreen
@@ -69,8 +68,8 @@ fun CartScreen(
     if (showClearDialog) {
         AlertDialog(
             onDismissRequest = { showClearDialog = false },
-            title = { Text(text = "Clear Cart?") },
-            text = { Text(text = "Are you sure you want to remove all items from your shopping cart?") },
+            title = { Text(text = stringResource(R.string.clear_cart_dialog_title)) },
+            text = { Text(text = stringResource(R.string.clear_cart_dialog_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -78,19 +77,19 @@ fun CartScreen(
                         showClearDialog = false
                     }
                 ) {
-                    Text(text = "Clear", color = MaterialTheme.colorScheme.error)
+                    Text(text = stringResource(R.string.clear), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearDialog = false }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.cancel))
                 }
             }
         )
     }
 
     // Checkout Confirmation Dialog
-    if (uiState.checkoutSuccessMessage != null) {
+    if (uiState.isCheckoutSuccess) {
         AlertDialog(
             onDismissRequest = viewModel::dismissCheckoutMessage,
             icon = {
@@ -101,8 +100,8 @@ fun CartScreen(
                     modifier = Modifier.size(48.dp)
                 )
             },
-            title = { Text(text = "Order Placed!") },
-            text = { Text(text = uiState.checkoutSuccessMessage ?: "") },
+            title = { Text(text = stringResource(R.string.order_placed_title)) },
+            text = { Text(text = stringResource(R.string.order_placed_success)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -110,7 +109,7 @@ fun CartScreen(
                         onNavigateToProducts()
                     }
                 ) {
-                    Text(text = "Continue Shopping")
+                    Text(text = stringResource(R.string.continue_shopping))
                 }
             }
         )
@@ -123,13 +122,13 @@ fun CartScreen(
                 title = {
                     Column {
                         Text(
-                            text = "Shopping Cart",
+                            text = stringResource(R.string.shopping_cart),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         if (!uiState.isEmpty) {
                             Text(
-                                text = "${uiState.cartSummary.totalItemCount} items in cart (Offline ready)",
+                                text = stringResource(R.string.cart_items_count, uiState.cartSummary.totalItemCount),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -140,7 +139,7 @@ fun CartScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -149,7 +148,7 @@ fun CartScreen(
                         IconButton(onClick = { showClearDialog = true }) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = "Clear Cart",
+                                contentDescription = stringResource(R.string.clear),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -174,7 +173,7 @@ fun CartScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "Total Items",
+                                text = stringResource(R.string.total_items),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -192,12 +191,12 @@ fun CartScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "Shipping",
+                                text = stringResource(R.string.shipping),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "FREE",
+                                text = stringResource(R.string.free),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = SuccessGreen
@@ -214,12 +213,12 @@ fun CartScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Total Amount",
+                                text = stringResource(R.string.total_amount),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "$${String.format("%.2f", uiState.cartSummary.totalPrice)}",
+                                text = stringResource(R.string.formatted_price, uiState.cartSummary.totalPrice),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.primary
@@ -239,7 +238,7 @@ fun CartScreen(
                             )
                         ) {
                             Text(
-                                text = "Proceed to Checkout",
+                                text = stringResource(R.string.proceed_to_checkout),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -272,10 +271,10 @@ fun CartScreen(
 
                 uiState.isEmpty -> {
                     EmptyStateView(
-                        title = "Your cart is empty",
-                        message = "Explore our wide collection of products and add items to your cart. They'll remain saved even when you're offline!",
+                        title = stringResource(R.string.your_cart_is_empty),
+                        message = stringResource(R.string.cart_empty_message),
                         icon = Icons.Outlined.ShoppingCart,
-                        actionButtonText = "Start Shopping",
+                        actionButtonText = stringResource(R.string.start_shopping),
                         onActionClick = onNavigateToProducts
                     )
                 }

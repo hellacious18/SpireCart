@@ -1,5 +1,6 @@
 package com.hellacious.spirecart.ui.details
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -28,12 +28,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddShoppingCart
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -41,7 +39,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -64,16 +61,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.hellacious.spirecart.R
 import com.hellacious.spirecart.domain.model.ProductReview
 import com.hellacious.spirecart.ui.components.ErrorView
 import com.hellacious.spirecart.ui.components.RatingBar
@@ -94,19 +92,20 @@ fun ProductDetailsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val product = uiState.product
     val context = LocalContext.current
+    val addedMsg = stringResource(R.string.added_to_cart_simple)
 
     var selectedImageIndex by remember { mutableStateOf(0) }
 
-    LaunchedEffect(uiState.userMessage) {
-        uiState.userMessage?.let { msg ->
-            android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+    LaunchedEffect(uiState.userMessageResId) {
+        uiState.userMessageResId?.let { resId ->
+            Toast.makeText(context, context.getString(resId), Toast.LENGTH_SHORT).show()
             viewModel.clearUserMessage()
         }
     }
 
     LaunchedEffect(uiState.isAddedToCartSnackbar) {
         if (uiState.isAddedToCartSnackbar) {
-            snackbarHostState.showSnackbar("Added to shopping cart!")
+            snackbarHostState.showSnackbar(addedMsg)
             viewModel.dismissSnackbar()
         }
     }
@@ -118,7 +117,7 @@ fun ProductDetailsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Product Details",
+                        text = stringResource(R.string.product_details),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -127,7 +126,7 @@ fun ProductDetailsScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -147,7 +146,7 @@ fun ProductDetailsScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ShoppingCart,
-                                contentDescription = "Cart"
+                                contentDescription = stringResource(R.string.cart)
                             )
                         }
                     }
@@ -187,7 +186,7 @@ fun ProductDetailsScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Remove,
-                                        contentDescription = "Decrease",
+                                        contentDescription = stringResource(R.string.decrease),
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
@@ -206,7 +205,7 @@ fun ProductDetailsScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Add,
-                                        contentDescription = "Increase",
+                                        contentDescription = stringResource(R.string.increase),
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
@@ -235,7 +234,7 @@ fun ProductDetailsScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             val totalPriceForSelection = product.price * uiState.selectedQuantityToAdd
                             Text(
-                                text = "Add • $${String.format("%.2f", totalPriceForSelection)}",
+                                text = stringResource(R.string.add_with_price, totalPriceForSelection),
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -261,7 +260,7 @@ fun ProductDetailsScreen(
 
                 uiState.isError -> {
                     ErrorView(
-                        message = uiState.errorMessage ?: "Failed to load product details.",
+                        message = uiState.errorMessage ?: stringResource(R.string.failed_load_details),
                         onRetry = viewModel::retry
                     )
                 }
@@ -301,7 +300,7 @@ fun ProductDetailsScreen(
                                     modifier = Modifier.align(Alignment.TopStart)
                                 ) {
                                     Text(
-                                        text = "${product.discountPercentage.toInt()}% OFF",
+                                        text = stringResource(R.string.percent_off, product.discountPercentage.toInt()),
                                         color = DiscountRed,
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
@@ -370,7 +369,7 @@ fun ProductDetailsScreen(
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
                                     Text(
-                                        text = if (isOutOfStock) "Out of Stock" else "${product.stock} in stock",
+                                        text = if (isOutOfStock) stringResource(R.string.out_of_stock) else stringResource(R.string.in_stock_count, product.stock),
                                         color = if (isOutOfStock) DiscountRed else SuccessGreen,
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
@@ -399,7 +398,7 @@ fun ProductDetailsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "(${product.reviews.size} reviews)",
+                                    text = stringResource(R.string.reviews_count, product.reviews.size),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -410,7 +409,7 @@ fun ProductDetailsScreen(
                             // Price Section
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
-                                    text = "$${String.format("%.2f", product.price)}",
+                                    text = stringResource(R.string.formatted_price, product.price),
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -420,7 +419,7 @@ fun ProductDetailsScreen(
                                     val originalPrice = product.price / (1 - (product.discountPercentage / 100))
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "$${String.format("%.2f", originalPrice)}",
+                                        text = stringResource(R.string.formatted_price, originalPrice),
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             textDecoration = TextDecoration.LineThrough
                                         ),
@@ -435,7 +434,7 @@ fun ProductDetailsScreen(
 
                             // Description
                             Text(
-                                text = "Description",
+                                text = stringResource(R.string.description),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -482,7 +481,7 @@ fun ProductDetailsScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
 
                                 Text(
-                                    text = "Customer Reviews",
+                                    text = stringResource(R.string.customer_reviews),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )

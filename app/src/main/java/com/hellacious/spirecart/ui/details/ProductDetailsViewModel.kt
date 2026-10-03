@@ -2,6 +2,7 @@ package com.hellacious.spirecart.ui.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hellacious.spirecart.R
 import com.hellacious.spirecart.core.network.NetworkResult
 import com.hellacious.spirecart.domain.repository.CartRepository
 import com.hellacious.spirecart.domain.repository.ProductRepository
@@ -55,7 +56,7 @@ class ProductDetailsViewModel(
                         it.copy(
                             isLoading = false,
                             errorMessage = result.message,
-                            userMessage = "You are offline. Unable to fetch fresh product details."
+                            userMessageResId = R.string.no_internet_connection
                         )
                     }
                 }
@@ -65,7 +66,7 @@ class ProductDetailsViewModel(
     }
 
     fun clearUserMessage() {
-        _uiState.update { it.copy(userMessage = null) }
+        _uiState.update { it.copy(userMessageResId = null) }
     }
 
     fun incrementQuantityToAdd() {

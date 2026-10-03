@@ -12,8 +12,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hellacious.spirecart.R
 import com.hellacious.spirecart.domain.model.ProductCategory
 
 @Composable
@@ -35,7 +37,7 @@ fun CategoryChips(
                 onClick = { onCategorySelected(null) },
                 label = {
                     Text(
-                        text = "All Products",
+                        text = stringResource(R.string.all_products),
                         fontWeight = if (isAllSelected) FontWeight.Bold else FontWeight.Medium
                     )
                 },

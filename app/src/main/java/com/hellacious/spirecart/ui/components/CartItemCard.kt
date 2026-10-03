@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,12 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.hellacious.spirecart.R
 import com.hellacious.spirecart.domain.model.CartItem
 
 @Composable
@@ -109,7 +109,7 @@ fun CartItemCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.DeleteOutline,
-                            contentDescription = "Remove Item",
+                            contentDescription = stringResource(R.string.remove_item),
                             tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                             modifier = Modifier.size(20.dp)
                         )
@@ -119,7 +119,7 @@ fun CartItemCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "$${String.format("%.2f", item.price)} / unit",
+                    text = stringResource(R.string.price_per_unit, item.price),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -133,7 +133,7 @@ fun CartItemCard(
                 ) {
                     // Total item price
                     Text(
-                        text = "$${String.format("%.2f", item.totalPrice)}",
+                        text = stringResource(R.string.formatted_price, item.totalPrice),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary
@@ -154,7 +154,7 @@ fun CartItemCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Remove,
-                                    contentDescription = "Decrease",
+                                    contentDescription = stringResource(R.string.decrease),
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -173,7 +173,7 @@ fun CartItemCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
-                                    contentDescription = "Increase",
+                                    contentDescription = stringResource(R.string.increase),
                                     modifier = Modifier.size(16.dp)
                                 )
                             }

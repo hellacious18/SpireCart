@@ -18,7 +18,8 @@ class ViewModelFactory(
             modelClass.isAssignableFrom(ProductListViewModel::class.java) -> {
                 ProductListViewModel(
                     productRepository = appContainer.productRepository,
-                    cartRepository = appContainer.cartRepository
+                    cartRepository = appContainer.cartRepository,
+                    connectivityObserver = appContainer.connectivityObserver
                 ) as T
             }
             modelClass.isAssignableFrom(ProductDetailsViewModel::class.java) -> {

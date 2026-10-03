@@ -1,5 +1,7 @@
 package com.hellacious.spirecart.ui
 
+import androidx.paging.PagingData
+import com.hellacious.spirecart.core.network.ConnectivityObserver
 import com.hellacious.spirecart.core.network.NetworkResult
 import com.hellacious.spirecart.domain.model.CartItem
 import com.hellacious.spirecart.domain.model.CartSummary
@@ -63,6 +65,7 @@ class ProductListViewModelTest {
         }
         override suspend fun getCategories(): NetworkResult<List<ProductCategory>> = categoriesResult
         override suspend fun getProductsByCategory(category: String, limit: Int, skip: Int): NetworkResult<List<Product>> = productsResult
+        override fun getProductsPaged(category: String?, query: String?): Flow<PagingData<Product>> = flowOf(PagingData.empty())
     }
 
     private class FakeCartRepository : CartRepository {
@@ -79,6 +82,11 @@ class ProductListViewModelTest {
         override suspend fun updateQuantity(productId: Long, quantity: Int) {}
         override suspend fun removeFromCart(productId: Long) {}
         override suspend fun clearCart() { countFlow.value = 0 }
+    }
+
+    private class FakeConnectivityObserver(initial: Boolean = true) : ConnectivityObserver {
+        val connectionFlow = MutableStateFlow(initial)
+        override val isConnected: Flow<Boolean> = connectionFlow
     }
 
     @Before
@@ -151,5 +159,31 @@ class ProductListViewModelTest {
         assertTrue(state.isError)
         assertNotNull(state.errorMessage)
         assertEquals("No internet connection", state.errorMessage)
+    }
+
+    @Test
+    fun `connectivity restored triggers auto retry and state update`() = runTest(testDispatcher) {
+        val fakeRepo = FakeProductRepository(
+            productsResult = NetworkResult.Error("Offline"),
+            categoriesResult = NetworkResult.Success(emptyList()),
+            searchResult = NetworkResult.Success(emptyList())
+        )
+        val fakeCartRepo = FakeCartRepository()
+        val fakeConnectivity = FakeConnectivityObserver(initial = false)
+
+        val viewModel = ProductListViewModel(fakeRepo, fakeCartRepo, fakeConnectivity)
+        advanceUntilIdle()
+
+        assertEquals("Offline", viewModel.uiState.value.errorMessage)
+        assertFalse(viewModel.uiState.value.isOnline)
+
+        // Internet restored!
+        fakeRepo.productsResult = NetworkResult.Success(listOf(sampleProduct))
+        fakeConnectivity.connectionFlow.value = true
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.isOnline)
+        assertEquals(1, viewModel.uiState.value.products.size)
+        assertEquals("Gaming Laptop", viewModel.uiState.value.products[0].title)
     }
 }

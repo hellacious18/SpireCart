@@ -9,7 +9,7 @@ data class ProductDetailsUiState(
     val selectedQuantityToAdd: Int = 1,
     val errorMessage: String? = null,
     val isAddedToCartSnackbar: Boolean = false,
-    val userMessage: String? = null
+    val userMessageResId: Int? = null
 ) {
     val isError: Boolean
         get() = errorMessage != null && product == null

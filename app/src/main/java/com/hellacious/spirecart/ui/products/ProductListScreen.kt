@@ -1,19 +1,24 @@
 package com.hellacious.spirecart.ui.products
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -21,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -37,21 +41,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hellacious.spirecart.domain.model.Product
+import com.hellacious.spirecart.R
 import com.hellacious.spirecart.ui.components.CategoryChips
 import com.hellacious.spirecart.ui.components.EmptyStateView
 import com.hellacious.spirecart.ui.components.ErrorView
@@ -69,11 +76,11 @@ fun ProductListScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
-    androidx.compose.runtime.LaunchedEffect(uiState.userMessage) {
-        uiState.userMessage?.let { msg ->
-            android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+    LaunchedEffect(uiState.userMessageResId) {
+        uiState.userMessageResId?.let { resId ->
+            Toast.makeText(context, context.getString(resId), Toast.LENGTH_SHORT).show()
             viewModel.clearUserMessage()
         }
     }
@@ -86,13 +93,13 @@ fun ProductListScreen(
                 title = {
                     Column {
                         Text(
-                            text = "SpireCart",
+                            text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Explore top products & deals",
+                            text = stringResource(R.string.app_tagline),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -118,7 +125,7 @@ fun ProductListScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.ShoppingCart,
-                                contentDescription = "Shopping Cart",
+                                contentDescription = stringResource(R.string.shopping_cart),
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -136,15 +143,49 @@ fun ProductListScreen(
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
+            // Offline Indicator Banner
+            AnimatedVisibility(
+                visible = !uiState.isOnline,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(R.string.no_internet_connection),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+
             // Search Input
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = viewModel::onSearchQueryChanged,
-                placeholder = { Text("Search products, brands, tech...") },
+                placeholder = { Text(stringResource(R.string.search_placeholder)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
+                        contentDescription = stringResource(R.string.search_content_desc),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
@@ -153,7 +194,7 @@ fun ProductListScreen(
                         IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
-                                contentDescription = "Clear search",
+                                contentDescription = stringResource(R.string.clear_search),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -209,20 +250,20 @@ fun ProductListScreen(
 
                     uiState.isError -> {
                         ErrorView(
-                            message = uiState.errorMessage ?: "Failed to load products. Check your internet connection.",
+                            message = uiState.errorMessage ?: stringResource(R.string.failed_load_products),
                             onRetry = viewModel::retry
                         )
                     }
 
                     uiState.isEmpty -> {
                         EmptyStateView(
-                            title = "No products found",
+                            title = stringResource(R.string.no_products_found),
                             message = if (uiState.searchQuery.isNotBlank()) {
-                                "No matches found for \"${uiState.searchQuery}\". Try adjusting your search query."
+                                stringResource(R.string.no_products_query, uiState.searchQuery)
                             } else {
-                                "No products available in this category."
+                                stringResource(R.string.no_products_category)
                             },
-                            actionButtonText = "Reset Filters",
+                            actionButtonText = stringResource(R.string.reset_filters),
                             onActionClick = {
                                 viewModel.onSearchQueryChanged("")
                                 viewModel.onCategorySelected(null)
@@ -239,6 +280,7 @@ fun ProductListScreen(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(uiState.products, key = { it.id }) { product ->
+                                val addedToCartMsg = stringResource(R.string.added_to_cart, product.title)
                                 ProductCard(
                                     product = product,
                                     onProductClick = onNavigateToDetails,
@@ -247,7 +289,7 @@ fun ProductListScreen(
                                         coroutineScope.launch {
                                             snackbarHostState.currentSnackbarData?.dismiss()
                                             snackbarHostState.showSnackbar(
-                                                message = "Added ${clickedProduct.title} to cart",
+                                                message = addedToCartMsg,
                                                 duration = SnackbarDuration.Short
                                             )
                                         }
