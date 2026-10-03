@@ -4,6 +4,12 @@ SpireCart is a shopping Android app built with Jetpack Compose. It lets users br
 
 ---
 
+## 📱 APK & Demo Recording
+
+- **Google Drive Folder (APK & Screen Recording)**: [Download APK & Watch Demo](https://drive.google.com/drive/folders/1lRLYMHgo_ZHDTkVRmtFOTWOyLhn-tojJ?usp=sharing)
+
+---
+
 ## ✨ Features
 
 - **Product Catalog**: Browse products with images, prices, ratings, and discounts.

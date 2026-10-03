@@ -266,8 +266,10 @@ fun ProductDetailsScreen(
                 }
 
                 product != null -> {
-                    val images = if (product.images.isNotEmpty()) product.images else listOf(product.thumbnail)
-                    val activeImage = images.getOrNull(selectedImageIndex) ?: product.thumbnail
+                    val validImages = (product.images.filter { it.isNotBlank() }.ifEmpty {
+                        listOf(product.thumbnail).filter { it.isNotBlank() }
+                    }).ifEmpty { listOf("") }
+                    val activeImage = validImages.getOrNull(selectedImageIndex) ?: validImages.firstOrNull() ?: ""
 
                     Column(
                         modifier = Modifier
@@ -283,8 +285,11 @@ fun ProductDetailsScreen(
                         ) {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
-                                    .data(activeImage)
+                                    .data(activeImage.ifBlank { null })
                                     .crossfade(true)
+                                    .placeholder(R.drawable.ic_product_placeholder)
+                                    .error(R.drawable.ic_product_placeholder)
+                                    .fallback(R.drawable.ic_product_placeholder)
                                     .build(),
                                 contentDescription = product.title,
                                 contentScale = ContentScale.Fit,
@@ -311,14 +316,14 @@ fun ProductDetailsScreen(
                         }
 
                         // Thumbnail Gallery Selector
-                        if (images.size > 1) {
+                        if (validImages.size > 1) {
                             LazyRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 12.dp),
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                items(images.indices.toList()) { index ->
+                                items(validImages.indices.toList()) { index ->
                                     val isSelected = index == selectedImageIndex
                                     Box(
                                         modifier = Modifier
@@ -335,8 +340,11 @@ fun ProductDetailsScreen(
                                     ) {
                                         AsyncImage(
                                             model = ImageRequest.Builder(LocalContext.current)
-                                                .data(images[index])
+                                                .data(validImages[index].ifBlank { null })
                                                 .crossfade(true)
+                                                .placeholder(R.drawable.ic_product_placeholder)
+                                                .error(R.drawable.ic_product_placeholder)
+                                                .fallback(R.drawable.ic_product_placeholder)
                                                 .build(),
                                             contentDescription = null,
                                             contentScale = ContentScale.Fit,

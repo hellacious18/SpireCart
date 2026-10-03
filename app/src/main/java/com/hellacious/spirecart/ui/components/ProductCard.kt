@@ -69,8 +69,11 @@ fun ProductCard(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(product.thumbnail)
+                        .data(product.thumbnail.ifBlank { null })
                         .crossfade(true)
+                        .placeholder(R.drawable.ic_product_placeholder)
+                        .error(R.drawable.ic_product_placeholder)
+                        .fallback(R.drawable.ic_product_placeholder)
                         .build(),
                     contentDescription = product.title,
                     contentScale = ContentScale.Fit,

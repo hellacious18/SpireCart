@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <!-- Outer Soft Frame -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M16,24C16,19.58 19.58,16 24,16H72C76.42,16 80,19.58 80,24V72C80,76.42 76.42,80 72,80H24C19.58,80 16,76.42 16,72V24Z"/>
+    <!-- Image Mountain / Sun Placeholder Icon -->
+    <path
+        android:fillColor="#9E9E9E"
+        android:pathData="M32,38C34.76,38 37,35.76 37,33C37,30.24 34.76,28 32,28C29.24,28 27,30.24 27,33C27,35.76 29.24,38 32,38ZM24,68H72L57,48L45,64L36,52L24,68Z"/>
+</vector>

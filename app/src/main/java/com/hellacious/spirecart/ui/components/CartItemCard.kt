@@ -71,8 +71,11 @@ fun CartItemCard(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(item.thumbnail)
+                        .data(item.thumbnail.ifBlank { null })
                         .crossfade(true)
+                        .placeholder(R.drawable.ic_product_placeholder)
+                        .error(R.drawable.ic_product_placeholder)
+                        .fallback(R.drawable.ic_product_placeholder)
                         .build(),
                     contentDescription = item.title,
                     contentScale = ContentScale.Fit,
